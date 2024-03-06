@@ -1,0 +1,1330 @@
+import pyodbc
+from tkinter import *
+import tkinter as tk
+from tkinter import messagebox
+
+
+
+def AdminLogin():
+    global Adminroot
+    Adminroot = Toplevel()
+    Adminroot.title("Registration  System")
+    Adminroot.geometry('925x500')
+    Adminroot.configure(bg='white')
+    Adminroot.resizable(False, False)
+    Label(Adminroot, text='Course Registartion System', fg='#57a1f8', bg='white',font=('Microsoft YaHei UI light', 18, 'bold')).place(x=100, y=30)
+
+    # login Image
+    img = PhotoImage(file='log2.png')
+    Label(Adminroot, image=img, bg='white').place(x=80, y=100)
+
+    # Login frame
+    frame = Frame(Adminroot, width=350, height=450, bg='white')
+    frame.place(x=500, y=70)
+
+    # Login Freature
+    heading = Label(frame, text='Admin Login', fg='#57a1f8', bg='white',font=('Microsoft YaHei UI light', 23, 'bold')).place(x=60, y=6)
+    sublabel_1 = Label(frame, text='Admin Id', fg='#57a1f8', bg='white',font=('Microsoft YaHei UI light', 13, 'bold')).place(x=60, y=77)
+    IDLogin = Entry(frame, width=25, fg='black', border=2, bg='white', font=('Microsoft YaHei UI light', 11))
+    IDLogin.place(x=60, y=107)
+    sublabel_2 = Label(frame, text='Password', fg='#57a1f8', bg='white',font=('Microsoft YaHei UI light', 13, 'bold')).place(x=60, y=150)
+    password = Entry(frame, width=25, fg='black', border=2, bg='white', show='*',font=('Microsoft YaHei UI light', 11))
+    password.place(x=60, y=180)
+    sublabel_3 = Label(frame, text='Log-in as Student.', fg='black', bg='white',font=('Microsoft YaHei UI light', 9)).place(x=60, y=300)
+    Button(frame, width=10, text='Click here', border=0, bg='white', cursor='hand2', fg='#57a1f8',command=StuLogin).place(x=200, y=300)
+    Button(frame, width=39, pady=7, text='Log In', bg='#57a1f8', fg='white', border=0, cursor='hand2',command=lambda: login_verification(IDLogin.get(), password.get(), 'Admin')).place(x=30, y=250)
+
+
+def StuLogin():
+    global Sturoot
+    Sturoot = Toplevel()
+    Sturoot.title("Registration  System")
+    Sturoot.geometry('925x500')
+    Sturoot.configure(bg='white')
+    Sturoot.resizable(False,False)
+    Label(Sturoot,text='Course Registartion System',fg='#57a1f8',bg='white',font=('Microsoft YaHei UI light',18,'bold')).place(x=100,y=30)
+
+    #login Image
+    img = PhotoImage(file='log2.png')
+    Label(Sturoot,image=img,bg='white').place(x=80,y=100)
+
+    #Login frame
+    frame = Frame(Sturoot,width=350,height=450,bg='white')
+    frame.place(x=500,y=70)
+    #Login Freature
+    heading = Label(frame,text='Student Log-In', fg='#57a1f8',bg='white',font=(' ',23,'bold')).place(x=60,y=6)
+    sublabel_1 = Label(frame,text='Student Id', fg='#57a1f8',bg='white',font=('Microsoft YaHei UI light',13,'bold')).place(x=60,y=77)
+    IDLogin = Entry(frame,width=25, fg='black',border=2,bg='white',font=('Microsoft YaHei UI light',11))
+    IDLogin.place(x=60,y=107)
+    sublabel_2 = Label(frame,text='Password', fg='#57a1f8',bg='white',font=('Microsoft YaHei UI light',13,'bold')).place(x=60,y=150)
+    password = Entry(frame,width=25, fg='black',border=2,bg='white',show='*',font=('Microsoft YaHei UI light',11))
+    password.place(x=60,y=180)
+    sublabel_3 = Label(frame,text='Log-in as Administrator.', fg='black',bg='white',font=('Microsoft YaHei UI light',9)).place(x=60,y=300)
+    Button(frame, width=10, text='Click here', border=0, bg='white', cursor='hand2', fg='#57a1f8',command=AdminLogin).place(x=200, y=300)
+    mainbutton = Button(frame, width=39, pady=7, text='Log In', bg='#57a1f8', fg='white', border=0, cursor='hand2',command=lambda: login_verification(IDLogin.get(), password.get(), 'Student'))
+    mainbutton.place(x=30, y=250)
+
+def login_verification(IDLogin,password,UserType):
+    global Current_prof_id, Current_Stu_id
+    if UserType == 'Student':
+        cursor.execute("Select * From Student_details Where Login_ID = ? AND Password = ?", (IDLogin, password))
+        data = cursor.fetchone()
+        if data is not None:
+            Sturoot.destroy()
+            Current_Stu_id = IDLogin
+            StuInter()
+        else:
+            messagebox.showinfo("Error", "Invalid Account Details!")
+    else:
+        cursor.execute("Select * From Admin_Login login Where Login_ID = ? AND Password = ?", (IDLogin, password))
+        data = cursor.fetchone()
+        if data is not None:
+            Adminroot.destroy()
+            Current_prof_id = IDLogin
+            AdminInter()
+        else:
+            messagebox.showinfo("Error", "Invalid Account Details!")
+
+def StuInter():
+
+    StuMenuroot = Toplevel()
+    StuMenuroot.title("Student Login")
+    StuMenuroot.geometry('725x400')
+    StuMenuroot.configure(bg='#D9D9D9')
+    StuMenuroot.resizable(False, False)
+    Label(StuMenuroot, text='Student Login Menu', fg='#57a1f8', bg='#D9D9D9',font=('Microsoft YaHei UI light', 24, 'bold')).place(x=250, y=30)
+
+    button1 = Button(StuMenuroot, width=19, pady=4, text='Register', bg='#57a1f8', fg='white', border=0,cursor='hand2',command=lambda : registartion_status_check()).place(x=100, y=150)
+    button2 = Button(StuMenuroot, width=19, pady=4, text='View My Schedule', bg='#57a1f8', fg='white', border=0,cursor='hand2', command=lambda: View_my_schedule()).place(x=300, y=150)
+    button3 = Button(StuMenuroot, width=19, pady=4, text='Drop Course', bg='#57a1f8', fg='white', border=0,cursor='hand2',command=lambda:Drop_course()).place(x=500, y=150)
+    button4 = Button(StuMenuroot, width=19, pady=4, text='View/Send Message', bg='#57a1f8', fg='white', border=0,cursor='hand2',command=lambda : Credits_view()).place(x=100, y=250)
+    button5 = Button(StuMenuroot, width=19, pady=4, text='Account Setting', bg='#57a1f8', fg='white', border=0,cursor='hand2',command=lambda: Student_info_update() ).place(x=300, y=250)
+
+
+
+def AdminInter():
+
+    AdminMenuroot = Toplevel()
+    AdminMenuroot.title("Adminstrator Login")
+    AdminMenuroot.geometry('725x400')
+    AdminMenuroot.configure(bg='#D9D9D9')
+    AdminMenuroot.resizable(False, False)
+    Label(AdminMenuroot, text='Adminstrator Login Menu', fg='#57a1f8', bg='#D9D9D9',font=('Microsoft YaHei UI light', 24, 'bold')).place(x=250, y=30)
+
+    button1 = Button(AdminMenuroot, width=19, pady=4, text='Add Courses', bg='#57a1f8', fg='white', border=0,cursor='hand2',command=lambda: AddCourse()).place(x=100, y=150)
+    button2 = Button(AdminMenuroot, width=19, pady=4, text='Registartion status', bg='#57a1f8', fg='white', border=0,cursor='hand2',command=lambda: edit_student_schedule()).place(x=300, y=150)
+    button3 = Button(AdminMenuroot, width=19, pady=4, text='Edit Course', bg='#57a1f8', fg='white', border=0,cursor='hand2',command=lambda: EditCourse()).place(x=500, y=150)
+    button4 = Button(AdminMenuroot, width=19, pady=4, text='Delete Course', bg='#57a1f8', fg='white', border=0,cursor='hand2',command=lambda: DeleteCourse()).place(x=100, y=250)
+    button5 = Button(AdminMenuroot, width=19, pady=4, text='Account Setting', bg='#57a1f8', fg='white', border=0,cursor='hand2',command=lambda: Admin_info_update() ).place(x=300, y=250)
+    '''button5 = Button(AdminMenuroot, width=19, pady=4, text='Edit Courses', bg='#57a1f8', fg='white', border=0,cursor='hand2').place(x=300, y=250)'''
+
+def AddCourse():
+    global Addcourseframe, course_id_entry, course_name_entry, course_credithours_entry, course_term_label_va, course_prof_entry, course_startdate_entry, course_enddate_entry, seats_available_entry, semester_label_va
+    Addcourseframe = tk.Toplevel(root)
+    Addcourseframe.title("Add Course")
+    Addcourseframe.geometry("400x660")
+
+    # Create labels and entry fields for the course information
+    Course_id = Label(Addcourseframe, text="Course ID:").place(x=100, y=30)
+    course_id_entry = Entry(Addcourseframe, width=39, bg='white', fg='black', border=1)
+    course_id_entry.place(x=100,y=60)
+
+    course_Name = Label(Addcourseframe, text="Course Name:").place(x=100, y=90)
+    course_name_entry = Entry(Addcourseframe, width=39, bg='white', fg='black', border=1)
+    course_name_entry.place(x=100,y=120)
+
+    course_credithours_label = Label(Addcourseframe, text="Credit Hours:").place(x=100, y=150)
+    course_credithours_entry = Entry(Addcourseframe, width=39, bg='white', fg='black', border=1)
+    course_credithours_entry.place(x=100,y=180)
+
+    course_term_label = Label(Addcourseframe, text="Select Term")
+    course_term_label.place(x=100, y=210)
+    course_term_label_va = tk.StringVar()
+    course_term_label_va.set("A")
+    course_term_type_dropdown = tk.OptionMenu(Addcourseframe, course_term_label_va, "A", "B")
+    course_term_type_dropdown.config(width=32, bg='white', fg='black', border=1)
+    course_term_type_dropdown.place(x=100, y=230)
+
+    course_prof_label = Label(Addcourseframe, text="Professor:").place(x=100, y=270)
+    course_prof_entry = Entry(Addcourseframe, width=39, bg='white', fg='black', border=1)
+    course_prof_entry.place(x=100,y=300)
+
+    course_startdate_label = Label(Addcourseframe, text="Start date:").place(x=100, y=330)
+    course_startdate_entry = Entry(Addcourseframe, width=39, bg='white', fg='black', border=1)
+    course_startdate_entry.place(x=100,y=360)
+
+    course_enddate_label = Label(Addcourseframe, text="End Date:").place(x=100, y=390)
+    course_enddate_entry = Entry(Addcourseframe, width=39, bg='white', fg='black', border=1)
+    course_enddate_entry.place(x=100,y=420)
+
+    seats_available_label = Label(Addcourseframe, text="Total Slots Available:").place(x=100, y=450)
+    seats_available_entry = Entry(Addcourseframe, width=39, bg='white', fg='black', border=1)
+    seats_available_entry.place(x=100,y=480)
+
+    course_term_label = Label(Addcourseframe, text="Semester")
+    course_term_label.place(x=100, y=510)
+    semester_label_va = tk.StringVar()
+    semester_label_va.set("Fall")
+    course_term_type_dropdown = tk.OptionMenu(Addcourseframe, semester_label_va, "Fall", "Winter", "Summer")
+    course_term_type_dropdown.config(width=32, bg='white', fg='black', border=1)
+    course_term_type_dropdown.place(x=100, y=530)
+
+    Button(Addcourseframe, width=19, pady=6, text='Save', bg='#57a1f8', fg='white', border=0, cursor='hand2',command = lambda: Addcoursedeatils()).place(x=130, y=590)
+
+    Addcourseframe.mainloop()
+
+def Addcoursedeatils():
+
+    course_id = course_id_entry.get()
+    course_name =  course_name_entry.get()
+    course_credithour = course_credithours_entry.get()
+    course_term = course_term_label_va.get()
+    professor = course_prof_entry.get()
+    course_startdate = course_startdate_entry.get()
+    course_enddate = course_enddate_entry.get()
+    seats_available = seats_available_entry.get()
+    semester = semester_label_va.get()
+    print(course_id, course_name, course_credithour, course_term,professor,course_startdate,course_enddate,seats_available,semester)
+    try:
+        # Insert new member into the database
+        cursor.execute("INSERT INTO Course_details (Course_code, Course_name, Course_credits, Course_available_term, Course_professor, Course_Startdate, Course_enddate, Seats_available, Semester) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                   (course_id, course_name, course_credithour, course_term, professor, course_startdate, course_enddate, seats_available, semester))
+        # Commit the changes to the database
+        DBLink.commit()
+        messagebox.showinfo("Success", "Created Successfully!")
+    except:
+        messagebox.showinfo("Error", "Account Not Created!")
+
+    Addcourseframe.destroy()
+
+def courses_list(term):
+    if term == 'Aterm':
+        cursor.execute("Select Course_code, Course_name, Course_credits, Course_available_term, Semester, Course_professor, Course_Startdate, Course_enddate, Seats_available From Course_details Where Course_available_term = 'A'")
+        courses = cursor.fetchall()
+        return courses
+    elif term == 'Bterm':
+        cursor.execute("Select Course_code, Course_name, Course_credits, Course_available_term, Semester, Course_professor, Course_Startdate, Course_enddate, Seats_available From Course_details Where Course_available_term = 'B'")
+        courses = cursor.fetchall()
+        return courses
+
+def edit_course(course):
+    global Values, EditWindow
+    # Create a new window for editing a specific course
+
+    EditWindow = Toplevel()
+    EditWindow.title("Edit Course")
+    EditWindow.geometry("600x400")
+    EditWindow.configure(bg="white")
+    Values = course[0]
+
+    lister = []
+    # Display course details in an editable format
+    labels = ["Course ID", "Course Title", "Credit Hours", "Term", "Semester","Professor", "Start Date", "End Date", "Total Slots Available"]
+    for i, label_text in enumerate(labels):
+        label = Label(EditWindow, text=label_text, font=("Microsoft YaHei UI light", 12, "bold"), bg="white")
+        label.grid(row=i, column=0, padx=10, pady=5, sticky=W)
+        entry = Entry(EditWindow, font=("Microsoft YaHei UI light", 12))
+        entry.grid(row=i, column=1, padx=10, pady=5, sticky=W)
+        entry.insert(0, course[i])
+
+        lister.append(entry)
+
+    # Create a button to save the edited course
+    save_button = Button(EditWindow, text="Save Changes", font=("Microsoft YaHei UI light", 12), bg="#4CAF50", fg="#ffffff", command=lambda: save_edited_course(lister))
+    save_button.grid(row=len(labels), columnspan=2, pady=10)
+
+
+
+
+
+def save_edited_course(new_values):
+    modified_data = [entry.get() for entry in new_values]
+
+    try:
+        # Insert new member into the database
+        cursor.execute("UPDATE Course_details set Course_code = ?, Course_name=?, Course_credits=?, Course_available_term=?, Course_professor=?, Course_Startdate=?, Course_enddate=?, Seats_available=?, Semester=? where Course_code = ? ",
+                       (modified_data[0], modified_data[1], modified_data[2], modified_data[3], modified_data[5], modified_data[6], modified_data[7], modified_data[8],modified_data[4],Values))
+        # Commit the changes to the database
+        DBLink.commit()
+        EditWindow.destroy()
+        Course_Update.destroy()
+        messagebox.showinfo("Success","Updated Succesfully")
+        EditCourse()
+    except:
+        messagebox.showinfo("Error", "Sorry! Not Able to Update")
+
+
+
+def EditCourse():
+    global Course_Update
+    Course_Update = Toplevel()
+    Course_Update.title("Update Course")
+    Course_Update.geometry("1200x400")
+    Course_Update.configure(bg="white")
+
+    coursesA = courses_list("Aterm")
+
+
+
+    # Create a table to display the list of books
+    table_frame = Frame(Course_Update, bg="White")
+    table_frame.pack(pady=20)
+
+
+
+    # Create the table headers
+    headers = ["Course ID", "Course Title", "Credit Hours", "Term", "Semester","Professor", "Start Date", "End Date", "Total Slots Available","option"]
+    for i, header in enumerate(headers):
+        header_label = Label(table_frame, text=header, font=("Microsoft YaHei UI light", 12, "bold"), bg="#ffffff", fg="#000000", padx=10,
+                             pady=5, relief=RIDGE)
+        header_label.grid(row=0, column=i, sticky=NSEW)
+
+    # Create a row for each book in the table
+    for i,course in enumerate(coursesA):
+        for j, data in enumerate(course[:9]):
+            data_label = Label(table_frame, text=data, font=("Microsoft YaHei UI light", 12), bg="#ffffff", fg="#000000", padx=10, pady=5,
+                               relief=RIDGE)
+            data_label.grid(row=i + 1, column=j, sticky=NSEW)
+
+
+        # Create the "Edit" button for this book
+        Edit_button = Button(table_frame, text="Edit", font=("Microsoft YaHei UI light", 12), bg="#4CAF50", fg="#ffffff", padx=10,
+                               pady=5, relief=FLAT,command=lambda course=course: edit_course(course))
+        Edit_button.grid(row=i + 1, column=9, sticky=NSEW)
+
+
+    coursesB = courses_list('Bterm')
+
+    # Create a table to display the list of books
+    table_frame2 = Frame(Course_Update, bg="White")
+    table_frame2.pack(pady=20)
+
+    # Create the table headers
+    headers = ["Course ID", "Course Title", "Credit Hours", "Term", "Semester","Professor", "Start Date", "End Date", "Total Slots Available","option"]
+    for i, header in enumerate(headers):
+        header_label = Label(table_frame2, text=header, font=("Microsoft YaHei UI light", 12, "bold"), bg="#ffffff",
+                             fg="#000000", padx=10,
+                             pady=5, relief=RIDGE)
+        header_label.grid(row=0, column=i, sticky=NSEW)
+
+    # Create a row for each book in the table
+    for i, course in enumerate(coursesB):
+        for j, data in enumerate(course[:9]):
+            data_label = Label(table_frame2, text=data, font=("Microsoft YaHei UI light", 12), bg="#ffffff",
+                               fg="#000000", padx=10, pady=5,
+                               relief=RIDGE)
+            data_label.grid(row=i + 1, column=j, sticky=NSEW)
+
+                # Create the "Update" button for this book
+        Edit_button = Button(table_frame2, text="Edit", font=("Microsoft YaHei UI light", 12), bg="#4CAF50",
+                                       fg="#ffffff", padx=10,
+                                       pady=5, relief=FLAT,command=lambda course=course: edit_course(course))
+        Edit_button.grid(row=i + 1, column=9, sticky=NSEW)
+
+def DeleteCourse():
+    global Course_delete
+    Course_delete = Toplevel()
+    Course_delete.title("Update Course")
+    Course_delete.geometry("1200x400")
+    Course_delete.configure(bg="white")
+
+    coursesA = courses_list("Aterm")
+
+    table_frame = Frame(Course_delete, bg="White")
+    table_frame.pack(pady=20)
+
+    # Create the table headers
+    headers = ["Course ID", "Course Title", "Credit Hours", "Term", "Semester","Professor", "Start Date", "End Date", "Total Slots Available","option"]
+    for i, header in enumerate(headers):
+        header_label = Label(table_frame, text=header, font=("Microsoft YaHei UI light", 12, "bold"), bg="#ffffff", fg="#000000", padx=10,
+                             pady=5, relief=RIDGE)
+        header_label.grid(row=0, column=i, sticky=NSEW)
+
+    # Create a row for each book in the table
+    for i,course in enumerate(coursesA):
+        for j, data in enumerate(course[:9]):
+            data_label = Label(table_frame, text=data, font=("Microsoft YaHei UI light", 12), bg="#ffffff", fg="#000000", padx=10, pady=5,
+                               relief=RIDGE)
+            data_label.grid(row=i + 1, column=j, sticky=NSEW)
+
+        Delete_button = Button(table_frame, text="Delete", font=("Microsoft YaHei UI light", 12), bg="#4CAF50", fg="#ffffff", padx=10,
+                               pady=5, relief=FLAT,command=lambda course=course[0]: Delete_course_from_table(course))
+        Delete_button.grid(row=i + 1, column=9, sticky=NSEW)
+
+
+    coursesB = courses_list('Bterm')
+
+    # Create a table to display the list of books
+    table_frame2 = Frame(Course_delete, bg="White")
+    table_frame2.pack(pady=20)
+
+    # Create the table headers
+    headers = ["Course ID", "Course Title", "Credit Hours", "Term", "Semester","Professor", "Start Date", "End Date", "Total Slots Available","option"]
+    for i, header in enumerate(headers):
+        header_label = Label(table_frame2, text=header, font=("Microsoft YaHei UI light", 12, "bold"), bg="#ffffff",
+                             fg="#000000", padx=10,
+                             pady=5, relief=RIDGE)
+        header_label.grid(row=0, column=i, sticky=NSEW)
+
+    # Create a row for each book in the table
+    for i, book in enumerate(coursesB):
+        for j, data in enumerate(book[:9]):
+            data_label = Label(table_frame2, text=data, font=("Microsoft YaHei UI light", 12), bg="#ffffff",
+                               fg="#000000", padx=10, pady=5,
+                               relief=RIDGE)
+            data_label.grid(row=i + 1, column=j, sticky=NSEW)
+
+
+                # Create the "Update" button for this book
+        Delete_button = Button(table_frame2, text="Delete", font=("Microsoft YaHei UI light", 12), bg="#4CAF50",
+                                       fg="#ffffff", padx=10,
+                                       pady=5, relief=FLAT,command=lambda course=book[0]: Delete_course_from_table(course))
+        Delete_button.grid(row=i + 1, column=9, sticky=NSEW)
+
+def Delete_course_from_table(Course_code):
+    try:
+        # Insert new member into the database
+        cursor.execute("Delete From Course_details Where Course_code = ?",(Course_code))
+
+        DBLink.commit()
+
+        Course_delete.destroy()
+        messagebox.showinfo("Success","Deleted Successfully")
+        DeleteCourse()
+    except:
+        messagebox.showinfo("Error", "Sorry! Not Able to Update")
+
+
+def list_of_students():
+    cursor.execute("Select Login_ID, Student_name, Email, Registartion_Status From Student_details")
+    details = cursor.fetchall()
+    return details
+
+def edit_student_schedule():
+    global edit_student_schedule_window
+    # create dialog window
+    edit_student_schedule_window = Toplevel()
+    edit_student_schedule_window.title("Edit Student Schedule")
+
+    # set window size and position
+    edit_student_schedule_window.geometry("800x400")
+    edit_student_schedule_window.resizable(False, False)
+
+    Students = list_of_students()
+
+    # create table to display staff details
+    table = Frame(edit_student_schedule_window)
+    table.pack(pady=20)
+
+    headers = ["Student ID", "Student Name", "Email", "Status"]
+    for i, header in enumerate(headers):
+        header_label = Label(table, text=header, font=("Microsoft YaHei UI light", 12, "bold"), bg="#ffffff",
+                             fg="#000000", padx=10,
+                             pady=5, relief=RIDGE)
+        header_label.grid(row=0, column=i, sticky=NSEW)
+
+    for i, Students in enumerate(Students):
+        for j, data in enumerate(Students[:4]):
+            data_label = Label(table, text=data, font=("Microsoft YaHei UI light", 12), bg="#ffffff",
+                               fg="#000000", padx=10, pady=5,
+                               relief=RIDGE)
+            data_label.grid(row=i + 1, column=j, sticky=NSEW)
+
+            show_schedule_button = tk.Button(table, text="Show Schedule",
+                                             command=lambda student_id=Students[0], name=Students[1]: show_schedule(student_id, name))
+            message_button = tk.Button(table, text="Send Message",
+                                            command=lambda student_id=Students[0], name=Students[1]: send_message(student_id, name))
+            show_schedule_button.grid(row=i + 1, column=5, padx=5, pady=2)
+            message_button.grid(row=i + 1, column=6, padx=5, pady=2)
+
+    def show_schedule(student_id,name):
+        # get staff member's name from database
+
+        cursor.execute("SELECT cd.Course_code, cd.Course_name, cd.Course_credits, cd.Course_available_term, cd.Semester, cd.Course_professor, cd.Course_Startdate, cd.Course_enddate FROM ((Courses_registered AS CR LEFT JOIN Student_details AS SD ON CR.Student_ID = SD.Student_ID) LEFT JOIN Course_details AS cd ON CR.Course_ID = cd.Course_ID) WHERE SD.Login_ID = ?", (student_id,))
+        Student_Courses = cursor.fetchall()
+
+        show_schedule_window = Toplevel()
+        show_schedule_window.title(f"{name}'s Schedule")
+
+        # set window size and position
+        show_schedule_window.geometry("900x400")
+        show_schedule_window.resizable(False, False)
+
+        table_frame2 = Frame(show_schedule_window, bg="White")
+        table_frame2.pack(pady=20)
+        headers = ["Course ID", "Course Title", "Credit Hours", "Term", "Semester", "Professor", "Start Date",
+                   "End Date"]
+        for i, header in enumerate(headers):
+            header_label = Label(table_frame2, text=header, font=("Microsoft YaHei UI light", 12, "bold"),
+                                 bg="#ffffff",
+                                 fg="#000000", padx=10,
+                                 pady=5, relief=RIDGE)
+            header_label.grid(row=0, column=i, sticky=NSEW)
+
+        table_frame3 = Frame(show_schedule_window, bg="White")
+        table_frame3.pack(pady=20)
+        headers = ["Course ID", "Course Title", "Credit Hours", "Term", "Semester", "Professor", "Start Date",
+                   "End Date"]
+        for i, header in enumerate(headers):
+            header_label = Label(table_frame3, text=header, font=("Microsoft YaHei UI light", 12, "bold"),
+                                 bg="#ffffff",
+                                 fg="#000000", padx=10,
+                                 pady=5, relief=RIDGE)
+            header_label.grid(row=0, column=i, sticky=NSEW)
+        number1 = 0
+        number2 = 0
+        for total in Student_Courses:
+            if total[3] == 'A':
+                # Create a row for each book in the table
+
+                for j, data in enumerate(total[:8]):
+                    data_label = Label(table_frame2, text=data, font=("Microsoft YaHei UI light", 12), bg="#ffffff",
+                                       fg="#000000", padx=10, pady=5,
+                                       relief=RIDGE)
+                    data_label.grid(row=number1 + 1, column=j, sticky=NSEW)
+                number1+=1
+
+            elif total[3] == 'B':
+
+                # Create a row for each book in the table
+                for j, data in enumerate(total[:8]):
+                    data_label = Label(table_frame3, text=data, font=("Microsoft YaHei UI light", 12), bg="#ffffff",
+                                       fg="#000000", padx=10, pady=5,
+                                       relief=RIDGE)
+                    data_label.grid(row=number2 + 1, column=j, sticky=NSEW)
+                number2+=1
+
+    def send_message(student_id, name):
+        global message_page1
+        message_page1 = Toplevel()
+        message_page1.title("Send Message")
+        message_page1.geometry("400x620")
+        message_page1.configure(bg="white")
+        '''
+        message_page_past = Frame(message_page1, bg="White")
+        message_page_past.place()'''
+        date_label = tk.Label(message_page1, text="Last sent message send by me:")
+        date_label.pack(pady=10)
+        cursor.execute("Select Comments From Student_details where Login_ID = ?",(student_id))
+        message_of_admin = cursor.fetchone()
+        print(message_of_admin)
+        for text in message_of_admin:
+            if text is not None:
+                Admin_last_send = tk.Message(message_page1, text=text, width=200,bg="#ffffff",
+                           fg="#000000")
+                Admin_last_send.pack(pady=20)
+            else:
+                Admin_last_send = tk.Message(message_page1, text="No message available",width=200,bg="#ffffff",
+                           fg="#000000")
+                Admin_last_send.pack(pady=20)
+
+        admin_label = tk.Label(message_page1, text=f"Last sent message send by {name}:")
+        admin_label.pack(pady=10)
+        cursor.execute(
+            "Select * From Message_Table Where Admin_ID = (Select Admin_ID from Admin_Login Where Login_ID = ?) and Student_ID = (Select Student_ID from Student_details Where Login_ID = ?)",
+            (Current_prof_id, student_id))
+        details = cursor.fetchone()
+
+        if details is not None:
+
+            cursor.execute(
+                "Select Student_message From Message_Table Where Admin_ID = (Select Admin_ID from Admin_Login Where Login_ID = ?) and Student_ID = (Select Student_ID from Student_details Where Login_ID = ?)",
+                (Current_prof_id, student_id))
+            mess = cursor.fetchone()
+
+            Admin_last_send = tk.Message(message_page1, text=mess[0], width=200, bg="#ffffff",
+                                         fg="#000000")
+            Admin_last_send.pack(pady=20)
+        else:
+            Admin_last_send = tk.Message(message_page1, text="No message available", width=200, bg="#ffffff",
+                                         fg="#000000")
+            Admin_last_send.pack(pady=20)
+
+
+        Message_label = tk.Label(message_page1, text="Enter Message")
+        Message_label.pack(pady=30)
+        Message_entry = tk.Text(message_page1,width=30, height=5, bg='white', fg='black', border=1)
+        Message_entry.pack(pady=40)
+        send_message_button = Button(message_page1, width=10, pady=6, text='Send', bg='#57a1f8', fg='white', border=0, cursor='hand2',command = lambda: send_messager(Message_entry.get("1.0", "end-1c"),student_id))
+        send_message_button.pack(pady=45)
+
+
+
+        def send_messager(message,student_id):
+            try:
+                cursor.execute("Update Student_details Set Comments = ? where Login_ID = ?",(message,student_id))
+
+                DBLink.commit()
+                messagebox.showinfo("Success", "Message Send Successfully")
+                message_page1.destroy()
+            except:
+                messagebox.showerror("Error", "Unable to Send Message")
+
+def Admin_info_update():
+    global Admin_info_update_window
+
+
+    Admin_info_update_window = Toplevel(root)
+    Admin_info_update_window.title("Edit information")
+    Admin_info_update_window.geometry("370x250")
+    Admin_info_update_window.configure(bg="white")
+
+
+    cursor.execute("Select Admin_name, Email, Password from Admin_Login where Login_ID = ?",(Current_prof_id))
+    Admin_deatils = cursor.fetchone()
+    lister = []
+
+    labels = ["Name", "Email", "Password"]
+    for i, label_text in enumerate(labels):
+        label = Label(Admin_info_update_window, text=label_text, font=("Microsoft YaHei UI light", 12, "bold"), bg="white")
+        label.grid(row=i, column=0, padx=10, pady=5, sticky=W)
+        entry = Entry(Admin_info_update_window, font=("Microsoft YaHei UI light", 12))
+        entry.grid(row=i, column=1, padx=10, pady=5, sticky=W)
+        entry.insert(0, Admin_deatils[i])
+
+        lister.append(entry)
+
+
+    save_button = Button(Admin_info_update_window, text="Save Changes", font=("Microsoft YaHei UI light", 12), bg="#4CAF50", fg="#ffffff", command=lambda: Admin_info_update_db(lister))
+    save_button.grid(row=len(labels), columnspan=2, pady=10)
+
+
+def Admin_info_update_db(new_values):
+    modified_data = [entry.get() for entry in new_values]
+    print(modified_data)
+    print(Current_prof_id)
+    try:
+        cursor.execute("Update Admin_Login Set Admin_name=?, Email=?, Password=? Where Login_ID = ?",(modified_data[0], modified_data[1], modified_data[2],Current_prof_id))
+        DBLink.commit()
+        Admin_info_update.destroy()
+        messagebox.showinfo("Success","Updated Succesfully")
+    except:
+        messagebox.showinfo("Error", "Sorry! Not Able to Update")
+
+def Student_info_update():
+    global Student_info_update_window
+
+
+    Student_info_update_window = Toplevel()
+    Student_info_update_window.title("Edit information")
+    Student_info_update_window.geometry("370x250")
+    Student_info_update_window.configure(bg="white")
+
+
+    cursor.execute("Select Student_name, Email, Password from Student_details where Login_ID = ?",(Current_Stu_id))
+    Admin_deatils = cursor.fetchone()
+    lister = []
+
+    labels = ["Name", "Email", "Password"]
+    for i, label_text in enumerate(labels):
+        label = Label(Student_info_update_window, text=label_text, font=("Microsoft YaHei UI light", 12, "bold"), bg="white")
+        label.grid(row=i, column=0, padx=10, pady=5, sticky=W)
+        entry = Entry(Student_info_update_window, font=("Microsoft YaHei UI light", 12))
+        entry.grid(row=i, column=1, padx=10, pady=5, sticky=W)
+        entry.insert(0, Admin_deatils[i])
+
+        lister.append(entry)
+
+
+    save_button = Button(Student_info_update_window, text="Save Changes", font=("Microsoft YaHei UI light", 12), bg="#4CAF50", fg="#ffffff", command=lambda: Student_info_update_db(lister))
+    save_button.grid(row=len(labels), columnspan=2, pady=10)
+
+
+def Student_info_update_db(new_values):
+    modified_data = [entry.get() for entry in new_values]
+    try:
+        cursor.execute("Update Student_details Set Student_name=?, Email=?, Password=? Where Login_ID = ?",(modified_data[0], modified_data[1], modified_data[2],Current_Stu_id))
+        DBLink.commit()
+        Student_info_update_window.destroy()
+        messagebox.showinfo("Success","Updated Succesfully")
+    except:
+        messagebox.showinfo("Error", "Sorry! Not Able to Update")
+
+
+def Drop_course():
+    global drop_course
+    # Create the window for updating a book
+    drop_course = Toplevel()
+    drop_course.title("Drop Course")
+    drop_course.geometry("1200x400")
+    drop_course.configure(bg="white")
+
+    coursesA = get_student_courses("Aterm")
+
+    # Create a table to display the list of books
+    table_frame = Frame(drop_course, bg="White")
+    table_frame.pack(pady=20)
+
+    # Create the table headers
+    headers = ["Course ID", "Course Title", "Credit Hours", "Term", "Semester", "Professor", "Start Date", "End Date",
+               "option"]
+    for i, header in enumerate(headers):
+        header_label = Label(table_frame, text=header, font=("Microsoft YaHei UI light", 12, "bold"),
+                             bg="#ffffff", fg="#000000", padx=10,
+                             pady=5, relief=RIDGE)
+        header_label.grid(row=0, column=i, sticky=NSEW)
+
+    # Create a row for each book in the table
+    for i, subj in enumerate(coursesA):
+        for j, data in enumerate(subj[:8]):
+            data_label = Label(table_frame, text=data, font=("Microsoft YaHei UI light", 12), bg="#ffffff",
+                               fg="#000000", padx=10, pady=5,
+                               relief=RIDGE)
+            data_label.grid(row=i + 1, column=j, sticky=NSEW)
+
+        # Create the "Edit" button for this book
+        drop_button = Button(table_frame, text="Drop", font=("Microsoft YaHei UI light", 12), bg="#4CAF50",
+                             fg="#ffffff", padx=10,
+                             pady=5, relief=FLAT, command=lambda course_code=subj[0]: drop_course_from_db(course_code))
+        drop_button.grid(row=i + 1, column=8, sticky=NSEW)
+
+    coursesB = get_student_courses('Bterm')
+
+    # Create a table to display the list of books
+    table_frame2 = Frame(drop_course, bg="White")
+    table_frame2.pack(pady=20)
+
+    # Create the table headers
+    headers = ["Course ID", "Course Title", "Credit Hours", "Term", "Semester", "Professor", "Start Date", "End Date",
+               "option"]
+    for i, header in enumerate(headers):
+        header_label = Label(table_frame2, text=header, font=("Microsoft YaHei UI light", 12, "bold"),
+                             bg="#ffffff",
+                             fg="#000000", padx=10,
+                             pady=5, relief=RIDGE)
+        header_label.grid(row=0, column=i, sticky=NSEW)
+
+    # Create a row for each book in the table
+    for i, subj in enumerate(coursesB):
+        for j, data in enumerate(subj[:8]):
+            data_label = Label(table_frame2, text=data, font=("Microsoft YaHei UI light", 12), bg="#ffffff",
+                               fg="#000000", padx=10, pady=5,
+                               relief=RIDGE)
+            data_label.grid(row=i + 1, column=j, sticky=NSEW)
+
+            # Create the "Update" button for this book
+        drop_button = Button(table_frame2, text="Drop", font=("Microsoft YaHei UI light", 12), bg="#4CAF50",
+                             fg="#ffffff", padx=10,
+                             pady=5, relief=FLAT, command=lambda course_code=subj[0]: drop_course_from_db(course_code))
+        drop_button.grid(row=i + 1, column=8, sticky=NSEW)
+
+
+def get_student_courses(term):
+    if term == 'Aterm':
+        cursor.execute(
+            "SELECT cd.Course_code, cd.Course_name, cd.Course_credits, cd.Course_available_term, cd.Semester, cd.Course_professor, cd.Course_Startdate, cd.Course_enddate FROM ((Courses_registered AS CR LEFT JOIN Student_details AS SD ON CR.Student_ID = SD.Student_ID) LEFT JOIN Course_details AS cd ON CR.Course_ID = cd.Course_ID) WHERE SD.Login_ID = ? and cd.Course_available_term='A'",
+            (Current_Stu_id))
+        student_courses = cursor.fetchall()
+        return student_courses
+    elif term == 'Bterm':
+        cursor.execute(
+            "SELECT cd.Course_code, cd.Course_name, cd.Course_credits, cd.Course_available_term, cd.Semester, cd.Course_professor, cd.Course_Startdate, cd.Course_enddate FROM ((Courses_registered AS CR LEFT JOIN Student_details AS SD ON CR.Student_ID = SD.Student_ID) LEFT JOIN Course_details AS cd ON CR.Course_ID = cd.Course_ID) WHERE SD.Login_ID = ? and cd.Course_available_term='B'",
+            (Current_Stu_id))
+        student_courses = cursor.fetchall()
+        return student_courses
+
+
+def drop_course_from_db(course_code):
+    try:
+        cursor.execute(
+            "Delete From Courses_registered Where Course_ID = (Select Course_ID From Course_details Where Course_code = ?) and Student_ID = (Select Student_ID from Student_details Where Login_ID = ?)",
+            (course_code, Current_Stu_id))
+        DBLink.commit()
+        cursor.execute("Select credits_available, credits_registered From Student_details Where Login_ID = ?",(Current_Stu_id))
+        credits = cursor.fetchone()
+        print(credits)
+        print(Current_Stu_id)
+        cursor.execute("Select Course_credits From Course_details Where Course_code = ?",(course_code))
+        course_credits = cursor.fetchone()
+        print(course_credits)
+        registered_credits = credits[1] - course_credits[0]
+        print(registered_credits)
+        total_credits = credits[0] + course_credits[0]
+        print(total_credits)
+        cursor.execute("Update Student_details Set credits_available = ?, credits_registered = ? Where Login_ID = ?",(total_credits,registered_credits,Current_Stu_id))
+        DBLink.commit()
+        cursor.execute("Select Seats_available From Course_details Where Course_code=?",(course_code))
+        seats = cursor.fetchone()
+        cursor.execute("Update Course_details Set Seats_available = ? Where Course_code = ?",(seats+1,course_code))
+        DBLink.commit()
+        messagebox.showinfo("Success", "Droped Succesfully")
+        drop_course.destroy()
+
+
+    except Exception as e:
+        print(f"Error: {e}")
+        messagebox.showinfo("Error", "Sorry! Not Able to Drop Course")
+
+def View_my_schedule():
+    # Create the window for updating a book
+    View_my_schedule = Toplevel()
+    View_my_schedule.title("Drop Course")
+    View_my_schedule.geometry("1200x600")
+    View_my_schedule.configure(bg="white")
+
+    coursesA = get_student_courses("Aterm")
+
+    cursor.execute("Select credits_available, credits_registered from Student_details Where Login_ID = ?",
+                   (Current_Stu_id))
+    credits = cursor.fetchone()
+
+    Total_credits_label = Label(View_my_schedule, text='Credits Remaining:', bg="#57a1f8",
+                                font=("Microsoft YaHei UI light", 12, "bold"), fg='Black')
+    Total_credits_label.place(x=550, y=34)
+    Total_credits_label = Message(View_my_schedule, text=credits[0],
+                                  font=("Microsoft YaHei UI light", 15, "bold"))
+    Total_credits_label.place(x=730, y=30)
+
+    credits_remaining_label = Label(View_my_schedule, text='Credits Registered:', bg="#57a1f8", fg='black',
+                                    font=("Microsoft YaHei UI light", 12, "bold"))
+    credits_remaining_label.place(x=850, y=34)
+    Total_credits_label = Message(View_my_schedule, text=credits[1],
+                                  font=("Microsoft YaHei UI light", 15, "bold"))
+    Total_credits_label.place(x=1030, y=30)
+
+    # Create a table to display the list of books
+    table_frame = Frame(View_my_schedule, bg="White")
+    table_frame.pack(pady=80)
+
+    # Create the table headers
+    headers = ["Course ID", "Course Title", "Credit Hours", "Term", "Semester", "Professor", "Start Date", "End Date"]
+    for i, header in enumerate(headers):
+        header_label = Label(table_frame, text=header, font=("Microsoft YaHei UI light", 12, "bold"),
+                             bg="#ffffff", fg="#000000", padx=10,
+                             pady=5, relief=RIDGE)
+        header_label.grid(row=0, column=i, sticky=NSEW)
+
+    # Create a row for each book in the table
+    for i, subj in enumerate(coursesA):
+        for j, data in enumerate(subj[:8]):
+            data_label = Label(table_frame, text=data, font=("Microsoft YaHei UI light", 12), bg="#ffffff",
+                               fg="#000000", padx=10, pady=5,
+                               relief=RIDGE)
+            data_label.grid(row=i + 1, column=j, sticky=NSEW)
+
+
+    coursesB = get_student_courses('Bterm')
+
+    # Create a table to display the list of books
+    table_frame2 = Frame(View_my_schedule, bg="White")
+    table_frame2.pack(pady=10)
+
+    # Create the table headers
+    headers = ["Course ID", "Course Title", "Credit Hours", "Term", "Semester", "Professor", "Start Date", "End Date"]
+    for i, header in enumerate(headers):
+        header_label = Label(table_frame2, text=header, font=("Microsoft YaHei UI light", 12, "bold"),
+                             bg="#ffffff",
+                             fg="#000000", padx=10,
+                             pady=5, relief=RIDGE)
+        header_label.grid(row=0, column=i, sticky=NSEW)
+
+    # Create a row for each book in the table
+    for i, subj in enumerate(coursesB):
+        for j, data in enumerate(subj[:8]):
+            data_label = Label(table_frame2, text=data, font=("Microsoft YaHei UI light", 12), bg="#ffffff",
+                               fg="#000000", padx=10, pady=5,
+                               relief=RIDGE)
+            data_label.grid(row=i + 1, column=j, sticky=NSEW)
+
+global Max_credits_can_be_registered
+Max_credits_can_be_registered = 0
+
+
+def registartion_status_check():
+    cursor.execute("Select Registartion_Status From Student_details Where Login_ID = ?",(Current_Stu_id))
+    status = cursor.fetchone()[0]
+    cursor.execute("Select credits_available From Student_details Where Login_ID = ?", (Current_Stu_id))
+    cre = cursor.fetchone()[0]
+
+    print(status)
+    if cre==0:
+        messagebox.showinfo("Access Denied", "Sorry you dont have any credits remaining")
+    elif status == 'Registered':
+        messagebox.showinfo("Access Denied", "Sorry you have completed your registration.")
+    else:
+        Register_for_course()
+
+def Register_for_course():
+    global register_course_window
+    register_course_window = Toplevel()
+    register_course_window.title("Course Registration Page")
+    register_course_window.geometry("1200x550")
+    register_course_window.configure(bg="white")
+
+    coursesA = courses_list("Aterm")
+
+    credits_row = Frame(register_course_window, bg="White")
+    credits_row.pack(pady=20)
+
+    credits = get_credits()
+    print(credits)
+    print(Max_credits_can_be_registered)
+
+    total_credits_remaining_label = Label(register_course_window, bg="White",font=("Microsoft YaHei UI light", 12,"bold"),text="Total Credits remaining:")
+    total_credits_remaining_label.place(x=300,y=20)
+    total_credits_remaining_bumber = Message(register_course_window, text=credits[0],font=("Microsoft YaHei UI light", 12,"bold"))
+    total_credits_remaining_bumber.place(x=520,y=20)
+
+    total_credits_should_be_registered_label = Label(register_course_window, bg="White", font=("Microsoft YaHei UI light", 12,"bold"),
+                                          text="Max Credits that can be registered:")
+    total_credits_should_be_registered_label.place(x=600,y=10)
+    total_credits_should_be_registered_number = Message(register_course_window, text=Max_credits_can_be_registered, font=("Microsoft YaHei UI light", 12,"bold"))
+    total_credits_should_be_registered_number.place(x=900,y=10)
+
+    min_credits_should_be_registered_label = Label(register_course_window, bg="White",
+                                                     font=("Microsoft YaHei UI light", 12, "bold"),
+                                                     text=" Credits Registered:")
+    min_credits_should_be_registered_label.place(x=600, y=50)
+    min_credits_should_be_registered_number = Message(register_course_window, text=credits[1],
+                                                        font=("Microsoft YaHei UI light", 12, "bold"))
+    min_credits_should_be_registered_number.place(x=900, y=50)
+
+    # Create a table to display the list of books
+    table_frame = Frame(register_course_window, bg="White")
+    table_frame.pack(pady=40)
+
+    # Create the table headers
+    headers = ["Course ID", "Course Title", "Credit Hours", "Term", "Semester","Professor", "Start Date", "End Date", "Total Slots Available","option"]
+    for i, header in enumerate(headers):
+        header_label = Label(table_frame, text=header, font=("Microsoft YaHei UI light", 12, "bold"), bg="#ffffff", fg="#000000", padx=10,
+                             pady=5, relief=RIDGE)
+        header_label.grid(row=0, column=i, sticky=NSEW)
+
+    # Create a row for each book in the table
+    for i,book in enumerate(coursesA):
+        for j, data in enumerate(book[:9]):
+            data_label = Label(table_frame, text=data, font=("Microsoft YaHei UI light", 12), bg="#ffffff", fg="#000000", padx=10, pady=5,
+                               relief=RIDGE)
+            data_label.grid(row=i + 1, column=j, sticky=NSEW)
+        get_input = get_student_course_status(book[0])
+
+        if get_input is None:
+
+            Register_button = Button(table_frame, text="Register", font=("Microsoft YaHei UI light", 12), bg="#4CAF50",
+                                 fg="#ffffff", padx=10,
+                                 pady=5, relief=FLAT, command=lambda course=book[0],credit=book[2]: student_course_register(course,credit))
+
+        else:
+
+            Register_button = Button(table_frame, text="UnRegister", font=("Microsoft YaHei UI light", 12), bg="#4CAF50",
+                                 fg="#ffffff", padx=10,
+                                 pady=5, relief=FLAT, command=lambda course=book[0], credit=book[2]: unregister_course(course,credit))
+
+        Register_button.grid(row=i + 1, column=9, sticky=NSEW)
+
+    coursesB = courses_list('Bterm')
+
+    # Create a table to display the list of books
+    table_frame2 = Frame(register_course_window, bg="White")
+    table_frame2.pack(pady=20)
+
+    # Create the table headers
+    headers = ["Course ID", "Course Title", "Credit Hours", "Term", "Semester","Professor", "Start Date", "End Date", "Total Slots Available","option"]
+    for i, header in enumerate(headers):
+        header_label = Label(table_frame2, text=header, font=("Microsoft YaHei UI light", 12, "bold"), bg="#ffffff",
+                             fg="#000000", padx=10,
+                             pady=5, relief=RIDGE)
+        header_label.grid(row=0, column=i, sticky=NSEW)
+
+    # Create a row for each book in the table
+    for i, book in enumerate(coursesB):
+        for j, data in enumerate(book[:9]):
+            data_label = Label(table_frame2, text=data, font=("Microsoft YaHei UI light", 12), bg="#ffffff",
+                               fg="#000000", padx=10, pady=5,
+                               relief=RIDGE)
+            data_label.grid(row=i + 1, column=j, sticky=NSEW)
+
+        get_input = get_student_course_status(book[0])
+
+        if get_input is None:
+
+            Register_button = Button(table_frame2, text="Register", font=("Microsoft YaHei UI light", 12), bg="#4CAF50",
+                                 fg="#ffffff", padx=10,
+                                 pady=5, relief=FLAT, command=lambda course=book[0],credit=book[2]: student_course_register(course, credit))
+
+        else:
+
+            Register_button = Button(table_frame2, text="UnRegister", font=("Microsoft YaHei UI light", 12), bg="#4CAF50",
+                                 fg="#ffffff", padx=10,
+                                 pady=5, relief=FLAT, command=lambda course=book[0], credit=book[2]: unregister_course(course,credit))
+
+        Register_button.grid(row=i + 1, column=9, sticky=NSEW)
+
+
+    Complete_registration_button = Button(register_course_window, width=25, pady=6, text='Complete Registration', bg='#57a1f8', fg='white', border=0, cursor='hand2',command=lambda : Complete_registration_logic())
+    Complete_registration_button.pack(pady=20)
+
+def update_status():
+    cursor.execute("Update Student_details Set Registartion_Status = 'Registered' Where Login_ID = ?",(Current_Stu_id))
+    DBLink.commit()
+    cursor.execute("Select credits_available,credits_registered From Student_details Where Login_ID = ?", (Current_Stu_id))
+    total_credits = cursor.fetchall()
+    print(total_credits)
+    full_credits = total_credits[0][0] - total_credits[0][1]
+    cursor.execute("Update Student_details Set credits_available = ? Where Login_ID = ?",(full_credits,Current_Stu_id))
+    DBLink.commit()
+
+def Complete_registration_logic():
+
+    cursor.execute("Select credits_registered From Student_details Where Login_ID = ?",(Current_Stu_id))
+    live_credits = cursor.fetchone()
+
+    cursor.execute(
+        "SELECT cd.Course_credits FROM ((Courses_registered AS CR LEFT JOIN Student_details AS SD ON CR.Student_ID = SD.Student_ID) LEFT JOIN Course_details AS cd ON CR.Course_ID = cd.Course_ID) WHERE SD.Login_ID = ? and cd.Course_available_term='A'",
+        (Current_Stu_id))
+    A_term_credits_array = cursor.fetchall()
+    A_term_credits = [row[0] for row in A_term_credits_array ]
+
+    cursor.execute(
+    "SELECT cd.Course_credits FROM ((Courses_registered AS CR LEFT JOIN Student_details AS SD ON CR.Student_ID = SD.Student_ID) LEFT JOIN Course_details AS cd ON CR.Course_ID = cd.Course_ID) WHERE SD.Login_ID = ? and cd.Course_available_term='B'",
+    (Current_Stu_id))
+    B_term_credits_row = cursor.fetchall()
+    B_term_credits = [row[0] for row in B_term_credits_row]
+
+    if A_term_credits and B_term_credits is not None:
+        if Max_credits_can_be_registered == 12:
+            print(A_term_credits,B_term_credits)
+            if live_credits[0] <= Max_credits_can_be_registered and  sum(A_term_credits) == 6 and sum(B_term_credits) == 6:
+                messagebox.showinfo("Success", "Succesfully completed the registration")
+                update_status()
+                register_course_window.destroy()
+            else:
+                messagebox.showinfo("Error", "Please Register According to the Instructions")
+
+
+        elif  12 > Max_credits_can_be_registered > 6:
+            if live_credits[0] <= Max_credits_can_be_registered and sum(A_term_credits) >= 3 and sum(B_term_credits) >= 3 :
+                '''and sum(sum(A_term_credits),sum(B_term_credits)) == 9'''
+                messagebox.showinfo("Success", "Succesfully completed the registration")
+                update_status()
+                register_course_window.destroy()
+            else:
+                messagebox.showinfo("Error", "Please Register According to the Instructions")
+
+        elif 6 >= Max_credits_can_be_registered > 0:
+            if live_credits[0] <= Max_credits_can_be_registered and sum(A_term_credits) >= 3 and sum(B_term_credits) >= 3:
+                messagebox.showinfo("Success", "Succesfully completed the registration")
+                update_status()
+                register_course_window.destroy()
+            else:
+                messagebox.showinfo("Error", "Please Register According to the Instructions")
+
+    elif  6 >= Max_credits_can_be_registered > 0:
+        if live_credits[0] <= Max_credits_can_be_registered and (sum(A_term_credits) >= 3 or sum(B_term_credits) >= 3):
+            messagebox.showinfo("Success", "Succesfully completed the registration")
+            update_status()
+            register_course_window.destroy()
+        else:
+            messagebox.showinfo("Error", "Please Register According to the Instructions")
+    else:
+        messagebox.showinfo("Error", "Please Register According to the Instructions")
+
+
+def courses_list(term):
+    if term == 'Aterm':
+        cursor.execute("Select Course_code, Course_name, Course_credits, Course_available_term, Semester, Course_professor, Course_Startdate, Course_enddate, Seats_available From Course_details Where Course_available_term = 'A'")
+        courses = cursor.fetchall()
+        return courses
+    elif term == 'Bterm':
+        cursor.execute("Select Course_code, Course_name, Course_credits, Course_available_term, Semester, Course_professor, Course_Startdate, Course_enddate, Seats_available From Course_details Where Course_available_term = 'B'")
+        courses = cursor.fetchall()
+        return courses
+
+def get_student_course_status(course_code):
+
+    cursor.execute(
+        "Select * From Courses_registered Where Course_ID = (Select Course_ID From Course_details Where Course_code = ?) and Student_ID = (Select Student_ID from Student_details Where Login_ID = ?)",
+        (course_code, Current_Stu_id))
+    value = cursor.fetchone()
+    return value
+
+def student_course_register(course,credit):
+
+    cursor.execute("Select credits_registered From Student_details Where Login_ID = ?", (Current_Stu_id))
+    live_credits = cursor.fetchone()
+
+    cursor.execute("Select Seats_available From Course_details Where Course_code = ?", (course))
+    seats = cursor.fetchone()[0]
+
+    if int(live_credits[0])+int(credit) <= int(Max_credits_can_be_registered) and int(seats) > 0:
+        total = live_credits[0]+credit
+        cursor.execute("Update Student_details Set credits_registered = ? Where Login_ID = ?",(total, Current_Stu_id))
+        DBLink.commit()
+        cursor.execute("Update Course_details Set Seats_available = ? Where Course_code = ?", (int(seats)-1, course))
+        DBLink.commit()
+        cursor.execute("Select Course_ID From Course_details Where Course_code = ?", (course))
+        course_id = cursor.fetchone()[0]
+        cursor.execute("Select Student_ID from Student_details Where Login_ID = ?", (Current_Stu_id))
+        student_id = cursor.fetchone()[0]
+        try:
+            cursor.execute("Insert into Courses_registered(Course_ID,Student_ID) Values (?,?) ",(course_id,student_id))
+            DBLink.commit()
+            register_course_window.destroy()
+            messagebox.showinfo("Success", "Course Registered Succesfully")
+            Register_for_course()
+        except Exception as e:
+            print(f"Error: {e}")
+            messagebox.showinfo("Error", "Sorry! Not Able to Register Course")
+
+    else:
+        messagebox.showinfo("Error", "Sorry! You are exiding the Maximum Credits limit")
+
+def unregister_course(course_code,credits):
+
+    cursor.execute("Select credits_registered From Student_details Where Login_ID = ?", (Current_Stu_id))
+    live_credits = cursor.fetchone()[0]
+    cursor.execute("Select Seats_available From Course_details Where Course_code = ?", (course_code))
+    seats = cursor.fetchone()[0]
+    cursor.execute("Update Course_details Set Seats_available = ? Where Course_code = ?", (int(seats) + 1, course_code))
+    DBLink.commit()
+    total = int(live_credits) - int(credits)
+    cursor.execute("Update Student_details Set credits_registered = ? Where Login_ID = ?", (total, Current_Stu_id))
+    DBLink.commit()
+    try:
+        cursor.execute(
+            "Delete From Courses_registered Where Course_ID = (Select Course_ID From Course_details Where Course_code = ?) and Student_ID = (Select Student_ID from Student_details Where Login_ID = ?)",
+            (course_code, Current_Stu_id))
+        DBLink.commit()
+        register_course_window.destroy()
+        messagebox.showinfo("Success", "UnRegistered Course Succesfully")
+        Register_for_course()
+    except Exception as e:
+        print(f"Error: {e}")
+        messagebox.showinfo("Error", "Sorry! Not Able to Remove Course")
+
+def get_credits():
+    global Max_credits_can_be_registered
+    cursor.execute("Select credits_available, credits_registered From Student_details Where Login_ID = ?",(Current_Stu_id))
+    credits = cursor.fetchone()
+
+    if credits[0] > 12:
+        Max_credits_can_be_registered = 12
+    elif credits[0] <=12:
+        Max_credits_can_be_registered = credits[0]
+
+    return credits
+
+
+def list_of_Admins():
+    cursor.execute("Select Login_ID, Admin_name, Email From Admin_Login")
+    details = cursor.fetchall()
+    return details
+
+
+
+def Credits_view():
+    global Credits_view_window
+    # create dialog window
+    Credits_view_window = Toplevel()
+    Credits_view_window.title("Edit Student Schedule")
+
+    # set window size and position
+    Credits_view_window.geometry("800x400")
+    Credits_view_window.resizable(False, False)
+
+    Admins = list_of_Admins()
+
+    # create table to display staff details
+    table = Frame(Credits_view_window)
+    table.pack(pady=20)
+
+    headers = ["Admin_ID","Admin Name", "Email","Options"]
+    for i, header in enumerate(headers):
+        header_label = Label(table, text=header, font=("Microsoft YaHei UI light", 12, "bold"), bg="#ffffff",
+                             fg="#000000", padx=10,
+                             pady=5, relief=RIDGE)
+        header_label.grid(row=0, column=i, sticky=NSEW)
+
+    for i, Admin in enumerate(Admins):
+        for j, data in enumerate(Admin[:3]):
+            data_label = Label(table, text=data, font=("Microsoft YaHei UI light", 12), bg="#ffffff",
+                               fg="#000000", padx=10, pady=5,
+                               relief=RIDGE)
+            data_label.grid(row=i + 1, column=j, sticky=NSEW)
+
+
+            message_button = tk.Button(table, text="Send Message",
+                                            command=lambda Admin_id=Admin[0]: send_message2(Admin_id))
+            message_button.grid(row=i + 1, column=3, padx=5, pady=2)
+
+
+    def send_message2(Admin_id):
+        global message_page2
+        message_page2 = Toplevel()
+        message_page2.title("Send Message")
+        message_page2.geometry("400x520")
+        message_page2.configure(bg="white")
+        '''
+        message_page_past = Frame(message_page1, bg="White")
+        message_page_past.place()'''
+        date_label = tk.Label(message_page2, text="Last sent message by Admin:")
+        date_label.pack(pady=10)
+        cursor.execute("Select Comments From Student_details where Login_ID = ?",(Current_Stu_id))
+        message_of_admin = cursor.fetchone()
+        print(message_of_admin)
+        for text in message_of_admin:
+            if text is not None:
+                Admin_last_send = tk.Message(message_page2, text=text, width=200,bg="#ffffff",
+                           fg="#000000")
+                Admin_last_send.pack(pady=20)
+            else:
+                Admin_last_send = tk.Message(message_page2, text="No message available",width=200,bg="#ffffff",
+                           fg="#000000")
+                Admin_last_send.pack(pady=20)
+
+        admin_label = tk.Label(message_page2, text="Last sent message send by me:")
+        admin_label.pack(pady=10)
+
+        cursor.execute("Select * From Message_Table Where Admin_ID = (Select Admin_ID from Admin_Login Where Login_ID = ?) and Student_ID = (Select Student_ID from Student_details Where Login_ID = ?)",(Admin_id,Current_Stu_id))
+        details = cursor.fetchone()
+
+        print(details)
+
+        if details is not None:
+
+            cursor.execute(
+                "Select Student_message From Message_Table Where Admin_ID = (Select Admin_ID from Admin_Login Where Login_ID = ?) and Student_ID = (Select Student_ID from Student_details Where Login_ID = ?)",
+                (Admin_id, Current_Stu_id))
+            mess = cursor.fetchone()
+
+            Admin_last_send = tk.Message(message_page2, text=mess[0], width=200, bg="#ffffff",
+                                         fg="#000000")
+            Admin_last_send.pack(pady=20)
+        else:
+            Admin_last_send = tk.Message(message_page2, text="No message available", width=200, bg="#ffffff",
+                                         fg="#000000")
+            Admin_last_send.pack(pady=20)
+
+        Message_label = tk.Label(message_page2, text="Enter Message")
+        Message_label.pack(pady=30)
+        Message_entry = tk.Text(message_page2,width=30, height=5, bg='white', fg='black', border=1)
+        Message_entry.pack(pady=40)
+        send_message_button = Button(message_page2, width=10, pady=6, text='Send', bg='#57a1f8', fg='white', border=0, cursor='hand2',command = lambda: send_messager2(Message_entry.get("1.0", "end-1c"),Admin_id))
+        send_message_button.pack(pady=45)
+
+
+
+        def send_messager2(message,Admin_id):
+            cursor.execute(
+                "Select * From Message_Table Where Admin_ID = (Select Admin_ID from Admin_Login Where Login_ID = ?) and Student_ID = (Select Student_ID from Student_details Where Login_ID = ?)",
+                (Admin_id, Current_Stu_id))
+            check = cursor.fetchone()
+            if check is None:
+                try:
+                    cursor.execute("Select Admin_ID from Admin_Login Where Login_ID = ?",(Admin_id))
+                    admin = cursor.fetchone()[0]
+                    cursor.execute("Select Student_ID from Student_details Where Login_ID = ?", (Current_Stu_id))
+                    stu = cursor.fetchone()[0]
+                    cursor.execute("Insert into Message_Table (Admin_ID,Student_ID,Student_message) Values (?,?,?)",(admin,stu,message))
+                    DBLink.commit()
+                    messagebox.showinfo("Success", "Message Send Successfully")
+                    message_page2.destroy()
+
+                except Exception as e:
+                    print(f"Error: {e}")
+                    messagebox.showerror("Error", "Unable to Send Message")
+            else:
+                try:
+                    cursor.execute("Select Admin_ID from Admin_Login Where Login_ID = ?", (Admin_id))
+                    admin = cursor.fetchone()[0]
+                    cursor.execute("Select Student_ID from Student_details Where Login_ID = ?", (Current_Stu_id))
+                    stu = cursor.fetchone()[0]
+                    cursor.execute("Update Message_Table Set Student_message = ? where Admin_ID = ? and Student_ID = ?",(message,admin,stu))
+                    DBLink.commit()
+                    messagebox.showinfo("Success", "Message Send Successfully")
+                    message_page2.destroy()
+                except Exception as e:
+                    print(f"Error: {e}")
+                    messagebox.showerror("Error", "Unable to Send Message")
+
+
+def Register_new_student():
+    global Register_student_window
+    Register_student_window = tk.Toplevel(root)
+    Register_student_window.title("Register")
+    Register_student_window.geometry("300x360")
+
+    # Create labels and entry fields for the course information
+    Login_ID = Label(Register_student_window, text="Login_ID:(*College ID)").place(x=40, y=30)
+    Login_ID_entry = Entry(Register_student_window, width=39, bg='white', fg='black', border=1)
+    Login_ID_entry.place(x=40,y=60)
+
+    Student_name = Label(Register_student_window, text="Name:").place(x=40, y=90)
+    Student_name_entry = Entry(Register_student_window, width=39, bg='white', fg='black', border=1)
+    Student_name_entry.place(x=40,y=120)
+
+    Email_label = Label(Register_student_window, text="Email:").place(x=40, y=150)
+    Email_entry = Entry(Register_student_window, width=39, bg='white', fg='black', border=1)
+    Email_entry.place(x=40,y=180)
+
+    Password_label = Label(Register_student_window, text="Password:").place(x=40, y=210)
+    Password_entry = Entry(Register_student_window, width=39, bg='white', fg='black', border=1)
+    Password_entry.place(x=40, y=240)
+
+    Button(Register_student_window, width=19, pady=6, text='Create Account', bg='#57a1f8', fg='white', border=0, cursor='hand2',command = lambda: Add_student(Login_ID_entry.get(),Student_name_entry.get(),Email_entry.get(),Password_entry.get())).place(x=70, y=290)
+
+    Register_student_window.mainloop()
+
+def Add_student(login,student,email,password):
+    cursor.execute(
+        "Select * From Student_details where Login_ID = ? ",(login))
+    Login_ID = cursor.fetchone()
+    cursor.execute(
+        "Select * From Student_details where Email = ? ", ( email))
+    email = cursor.fetchone()
+
+    if Login_ID is None and email is None:
+
+        cursor.execute("Insert into Student_details (Login_ID,Student_name,Email,Password,credits_available,credits_registered,Registartion_status) Values (?,?,?,?,?,?,?)",(login,student,email,password,30,0,'not registered'))
+        DBLink.commit()
+        messagebox.showinfo("Success", "Account Successfully Created")
+        Register_student_window.destroy()
+    elif Login_ID is not None and email is None:
+        messagebox.showinfo("Error", "Unable to create account. Login ID Already exists")
+    elif Login_ID is None and email is not None:
+        messagebox.showinfo("Error", "Unable to create account. Email Already exists")
+    else:
+        messagebox.showinfo("Error", "Unable to create Account")
+
+
+
+
+
+
+
+
+
+def connectToMSAccess():
+    global DBLink, cursor
+    # Create connection to MS Access database
+    DBLink = pyodbc.connect(r'Driver={Microsoft Access Driver (*.mdb, *.accdb)};DBQ=C:\Users\Surya\Documents\windows_test\courseregistraionDB.accdb;')
+    print("connecting...")
+    # Set up the cursor
+    cursor = DBLink.cursor()
+    print("connected")
+
+connectToMSAccess()
+
+root = Tk()
+root.title("Course Registration  System")
+root.geometry('725x400')
+root.configure(bg='white')
+root.resizable(False,False)
+Label(root,text='Welcome to Course Registration System',fg='#57a1f8',bg='white',font=('Microsoft YaHei UI light',18,'bold')).place(x=160,y=30)
+
+
+stu_image = PhotoImage(file='Stu.png')
+Label(root,image=stu_image,bg='white').place(x=220,y=120)
+Button(root,text='Student Log In',width=14,pady=7,bg='#57a1f8',fg='white',border=0,cursor='hand2',command=StuLogin).place(x=230,y=240)
+
+
+Admin_image = PhotoImage(file='Admin1.png')
+Label(root,image=Admin_image,bg='white').place(x=400,y=120)
+Button(root,text='Administrator Log In',width=17,pady=7,bg='#57a1f8',fg='white',border=0,cursor='hand2',command=AdminLogin).place(x=400,y=240)
+
+sublabel_3 = Label(root, text='Create Student Account -', fg='black', bg='white',font=('Microsoft YaHei UI light', 9)).place(x=270, y=330)
+Button(root, width=10, text='Click here', border=0, bg='white', cursor='hand2', fg='#57a1f8',command=lambda : Register_new_student()).place(x=420, y=331)
+
+root.mainloop()
+
+
